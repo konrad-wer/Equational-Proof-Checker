@@ -1,0 +1,2 @@
+# EquationalProofChecker
+# Equational Proof Checker
