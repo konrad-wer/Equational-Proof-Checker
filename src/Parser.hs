@@ -80,7 +80,7 @@ theory = do
   rword "Theory"
   name <- option Nothing (Just <$> identifier)
   signature <- Map.fromList <$> parens (sig `sepBy` symbol ",")
-  Theory name signature <$> braces (equation signature `sepBy` symbol ",")
+  Theory name signature . Map.fromList <$> braces (equation signature `sepBy` symbol ",")
 
 -- named 'sig' instead of 'signature', because name 'signature'
 -- causes syntax highlighting to break
@@ -91,12 +91,14 @@ sig = do
   arity <- unsignedInteger
   return (sym, arity)
 
-equation :: Map.Map Var Int -> Parser Equation
+equation :: Map.Map Var Int -> Parser (Var, Equation)
 equation functionSymbols = do
+  name <- identifier
+  symbol ":"
   l <- term functionSymbols
   symbol "="
   r <- term functionSymbols
-  return $ Equation (Set.union (freeVarsOfTerm l) (freeVarsOfTerm r)) l r
+  return (name, Equation (Set.union (freeVarsOfTerm l) (freeVarsOfTerm r)) l r)
 
 term :: Map.Map Var Int -> Parser Term
 term functionSymbols = do
@@ -104,6 +106,7 @@ term functionSymbols = do
   id <- identifier
   case Map.lookup id functionSymbols of
     Nothing -> return $ Var id
+    Just 0 -> return $ FunctionSymbol id []
     Just arity -> do
       args <- parens $ sepBy (term functionSymbols) (symbol ",")
       if length args == arity then

@@ -5,9 +5,7 @@ import qualified Data.Map as Map
 
 type Var = String
 
-type Signature = Map.Map String Int
-
-data Theory = Theory (Maybe Var) Signature [Equation] deriving Show
+data Theory = Theory (Maybe Var) (Map.Map Var Int) (Map.Map Var Equation) deriving Show
 
 data Equation = Equation (Set.Set Var) Term Term deriving Show
 
