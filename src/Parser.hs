@@ -1,5 +1,5 @@
 module Parser
-    ( parseTheory
+    ( Parser.parse
     ) where
 
 -- "You've never heard of the Millennium Falcon?
@@ -60,7 +60,7 @@ rword :: String -> Parser ()
 rword w = (lexeme . try) (string w *> notFollowedBy alphaNumChar)
 
 rws :: [String]
-rws = ["Theory", "=", "/"]
+rws = ["Theory", "Proof", "reflexivity", "symmetry", "transitivity", "congruence", "rewrite"]
 
 identifier :: Parser Var
 identifier = (lexeme . try) (p >>= check)
@@ -70,17 +70,26 @@ identifier = (lexeme . try) (p >>= check)
       | x `elem` rws = fail $ "keyword " ++ show x ++ " cannot be an identifier"
       | otherwise = return x
 
--- Theory syntax ---------------------------------------------------------------
+-- Session / File -------------------------------------------------------------
 
-parseTheory :: String -> String -> Either (ParseErrorBundle String Void) Theory
-parseTheory = parse (between sc eof theory)
+parse :: String -> String -> Either (ParseErrorBundle String Void) (Session SourcePos)
+parse = Text.Megaparsec.parse (between sc eof session)
+
+session :: Parser (Session SourcePos)
+session = do
+  theory <- theory
+  let (Theory _ sig _) = theory
+  Session theory <$> many (theorem sig)
+
+-- Theory syntax --------------------------------------------------------------
+
 
 theory :: Parser Theory
 theory = do
   rword "Theory"
   name <- option Nothing (Just <$> identifier)
   signature <- Map.fromList <$> parens (sig `sepBy` symbol ",")
-  Theory name signature . Map.fromList <$> braces (equation signature `sepBy` symbol ",")
+  Theory name signature . Map.fromList <$> braces (namedEquation signature `sepBy` symbol ",")
 
 -- named 'sig' instead of 'signature', because name 'signature'
 -- causes syntax highlighting to break
@@ -91,14 +100,19 @@ sig = do
   arity <- unsignedInteger
   return (sym, arity)
 
-equation :: Map.Map Var Int -> Parser (Var, Equation)
-equation functionSymbols = do
+namedEquation :: Map.Map Var Int -> Parser (Var, Equation)
+namedEquation functionSymbols = do
   name <- identifier
   symbol ":"
+  equation <- equation functionSymbols
+  return (name, equation)
+
+equation :: Map.Map Var Int -> Parser Equation
+equation functionSymbols = do
   l <- term functionSymbols
   symbol "="
   r <- term functionSymbols
-  return (name, Equation (Set.union (freeVarsOfTerm l) (freeVarsOfTerm r)) l r)
+  return $ Equation (Set.union (freeVarsOfTerm l) (freeVarsOfTerm r)) l r
 
 term :: Map.Map Var Int -> Parser Term
 term functionSymbols = do
@@ -112,5 +126,47 @@ term functionSymbols = do
       if length args == arity then
         return $ FunctionSymbol id args
       else
-        fail $ "Mismatched arity at: " ++ sourcePosPretty pos
+        fail $ "Mismatched arity at: " ++ sourcePosPretty pos ++
+                "\nExpected " ++ show arity ++ " arguments, but found " ++ show (length args)
 
+-- Theorem parser -------------------------------------------------------------
+
+theorem :: Map.Map Var Int -> Parser (Theorem SourcePos)
+theorem functionSymbols = do
+  pos <- getSourcePos
+  rword "Theorem"
+  name <- identifier
+  symbol ":"
+  equation <- equation functionSymbols
+  rword "Proof"
+  Theorem pos name equation <$> proof functionSymbols
+
+proof :: Map.Map Var Int -> Parser (Proof SourcePos)
+proof functionSymbols = braces (some $ tactic functionSymbols)
+
+tactic :: Map.Map Var Int -> Parser (Tactic SourcePos)
+tactic functionSymbols = getSourcePos >>= (\pos ->
+  (rword "reflexivity" >> symbol "." >> return (Reflexivity pos)) <|>
+  (rword "symmetry" >> symbol "." >> return (Symmetry pos)) <|>
+  transitivity functionSymbols <|>
+  congruence functionSymbols)
+
+transitivity :: Map.Map Var Int -> Parser (Tactic SourcePos)
+transitivity functionSymbols = do
+  pos <- getSourcePos
+  rword "transitivity"
+  term <- term functionSymbols
+  symbol "."
+  symbol "-"
+  proof1 <- proof functionSymbols
+  symbol "-"
+  Transitivity pos term proof1 <$> proof functionSymbols
+
+congruence :: Map.Map Var Int -> Parser (Tactic SourcePos)
+congruence functionSymbols = do
+  pos <- getSourcePos
+  rword "congruence"
+  symbol "."
+  Congruence pos <$> many (do
+    symbol "-"
+    proof functionSymbols)

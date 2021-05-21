@@ -4,8 +4,11 @@ import System.Environment
 import Text.Megaparsec.Error (errorBundlePretty)
 import System.Exit
 import Data.List
+import Control.Monad
 import Data.Maybe
 import Parser
+import AST
+import ProofChecker
 
 printHelp :: IO ()
 printHelp = putStrLn $ "Usage: kwoka filename [options]\n" ++
@@ -21,7 +24,7 @@ parseArgs :: [String] -> IO (String, [String])
 parseArgs xs = do
   let filenames = filter (not . isArg) xs
   let args = filter isArg xs
-  if length filenames /= 1 || any (not . flip elem ["-debug", "-help"]) args then do
+  if length filenames /= 1 || not (all (`elem` ["-debug", "-help"]) args) then do
     printHelp
     exitWith $ ExitFailure 1
   else
@@ -34,6 +37,10 @@ main = do
     printHelp
   else do
     sourceCode <- readFile filename
-    case parseTheory filename sourceCode of
+    case parse filename sourceCode of
       Left err -> putStrLn $ errorBundlePretty err
-      Right ast -> print ast
+      Right (Session theory theorems) ->
+        forM_ theorems (\(Theorem _ name equation proof) ->
+          case check theory equation proof of
+            Right () -> putStrLn $ name ++ " - OK!"
+            Left error -> print error)

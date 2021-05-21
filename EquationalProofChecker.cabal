@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f2ead302402880f6dde6f92491827e9ab68836a373554e662cd099028b3ff923
+-- hash: 0f18c07082318620c230e2afacb8f7de60240e9f2dbf50050a731bf2c0283ac2
 
 name:           EquationalProofChecker
 version:        0.1.0.0
@@ -29,6 +29,7 @@ library
   exposed-modules:
       AST
       Parser
+      ProofChecker
   other-modules:
       Paths_EquationalProofChecker
   hs-source-dirs:
@@ -37,6 +38,7 @@ library
       base >=4.7 && <5
     , containers
     , megaparsec
+    , mtl
     , parser-combinators
   default-language: Haskell2010
 
@@ -52,6 +54,7 @@ executable EquationalProofChecker-exe
     , base >=4.7 && <5
     , containers
     , megaparsec
+    , mtl
     , parser-combinators
   default-language: Haskell2010
 
@@ -68,5 +71,6 @@ test-suite EquationalProofChecker-test
     , base >=4.7 && <5
     , containers
     , megaparsec
+    , mtl
     , parser-combinators
   default-language: Haskell2010
