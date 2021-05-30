@@ -1,4 +1,8 @@
 # Equational Proof Checker
+## Requirements
+
+`Haskell` + `stack`
+
 ## Installation
 ```
 stack install
