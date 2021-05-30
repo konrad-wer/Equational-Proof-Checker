@@ -1,0 +1,73 @@
+Theory NatPlus (0/0, s/1, plus/2)
+{
+  PlusZero  : plus(0, n) = n,
+  PlusSucc  : plus(s(n), m) = plus(n, s(plus(n, m))),
+  PlusComm  : plus(n, m) = plus(m, n),
+  PlusAssoc : plus(n, plus(m, k)) = plus(plus(n, m), k)
+}
+
+// Silly proofs
+
+Theorem SuccId : s(n) = s(n)
+Proof {
+  symmetry.
+  transitivity s(n).
+  - { congruence.
+    - { reflexivity. }
+    }
+  - { reflexivity. }
+}
+
+Theorem ZeroId : 0 = 0
+Proof {
+  symmetry.
+  transitivity 0.
+  - { congruence. }
+  - { reflexivity. }
+}
+
+Theorem PlusId : plus(n, m) = plus(n, m)
+Proof {
+  symmetry.
+  transitivity plus(n, m).
+  - { symmetry. reflexivity. }
+  - { reflexivity. }
+}
+
+// Normal proofs
+
+Theorem OnePlusOne : plus (s(0), s(0)) = s(s(0))
+Proof {
+  rewrite -> PlusSucc.
+  rewrite -> PlusZero.
+  rewrite -> PlusZero.
+  reflexivity.
+}
+
+Theorem PlusMangled : plus(plus(k, plus(m, n)), 0) = plus(n, plus(m, k))
+Proof {
+  rewrite left <- PlusComm.
+  rewrite -> PlusZero.
+  rewrite <- PlusComm.
+  rewrite <- PlusAssoc.
+  congruence.
+  - { reflexivity. }
+  - { apply PlusComm. }
+}
+
+// Using proof as equation
+
+Theorem ZeroPlus : n = plus(n, 0)
+Proof {
+  symmetry.
+  rewrite <- PlusComm.
+  apply PlusZero.
+}
+
+Theorem PlusMangled2 : plus(n, plus(m, k)) = plus(plus(k, plus(m, n)), 0)
+Proof {
+  rewrite right -> PlusAssoc with n := k.
+  rewrite right -> PlusComm with n := k.
+  rewrite right -> PlusComm with n := plus(m, k).
+  apply ZeroPlus.
+}

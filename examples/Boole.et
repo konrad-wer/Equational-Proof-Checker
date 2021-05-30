@@ -1,0 +1,40 @@
+
+Theory Boole (join/2, meet/2, top/0, bottom/0, not/1)
+{
+  // Lattice
+  JoinComm : join(x, y) = join(y, x),
+  MeetComm : meet(x, y) = meet(y, x),
+  JoinAssoc : join(x, join(y, z)) = join(join(x, y), z),
+  MeetAssoc : meet(x, meet(y, z)) = meet(meet(x, y), z),
+  JoinMeetReduce : join(x, meet(x, y)) = x,
+  MeetJoinReduce : meet(x, join(x, y)) = x,
+  JoinTop : join(x, top) = x,
+  JoinBottom : join(x, bottom) = bottom,
+  MeetTop : meet(x, top) = top,
+  MeetBottom : meet(x, bottom) = x,
+
+  // Distributive Lattice
+  DistrJoinMeet : join(x, meet(y, z)) = meet(join(x, y), join(x, z)),
+  DistrMeetJoin : meet(x, join(y, z)) = join(meet(x, y), meet(x, z)),
+
+  // Boole's Algebra
+  JoinNot : join(x, not(x)) = bottom,
+  InsultAgainstNatureAndGod : meet(x, not(x)) = top
+}
+
+Theorem DoubleNot : not(not(x)) = x
+Proof {
+  rewrite left <- JoinTop.
+  rewrite <- InsultAgainstNatureAndGod with x := x.
+  rewrite -> DistrJoinMeet.
+  rewrite -> JoinComm.
+  rewrite -> JoinNot.
+  rewrite -> MeetBottom.
+  rewrite right <- JoinTop.
+  rewrite <- InsultAgainstNatureAndGod with x := not(x).
+  rewrite -> DistrJoinMeet.
+  rewrite -> JoinNot.
+  rewrite -> MeetComm.
+  rewrite -> MeetBottom.
+  reflexivity.
+}
