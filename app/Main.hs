@@ -16,7 +16,7 @@ import ProofChecker
 printHelp :: IO ()
 printHelp = putStrLn $ "Usage: EquationalProofChecker filename [options]\n" ++
   "Options:\n" ++
-  "-debug - Pretty print program with inferred types to file\n" ++
+  "-debug - Run selected proof step-by-step\n" ++
   "-help - Print this message\n"
 
 isArg :: String -> Bool
