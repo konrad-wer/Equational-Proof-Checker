@@ -1,0 +1,10 @@
+Theory ()
+{
+  All : x = y
+}
+
+Theorem Id : x = x
+Proof { apply All .}
+
+Theorem T1 : a = b
+Proof { apply All .}

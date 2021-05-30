@@ -1,0 +1,27 @@
+Theory WeirdPlus (0/0, s/1, plus/2)
+{
+  PlusZero  : plus(0, n) = n,
+  WeirdPlusZero  : plus(0, n) = plus(k, k),
+  PlusSucc  : plus(s(n), m) = plus(n, s(plus(n, m))),
+  PlusComm  : plus(n, m) = plus(m, n),
+  PlusAssoc : plus(n, plus(m, k)) = plus(plus(n, m), k)
+}
+
+Theorem WeirdOnePlusOneWrong : plus (s(0), s(0)) = s(s(0))
+Proof {
+  rewrite right <- PlusZero.
+  rewrite left -> PlusSucc.
+  rewrite left -> WeirdPlusZero.
+  rewrite -> PlusZero.
+  reflexivity.
+}
+
+Theorem WeirdOnePlusOneWrong2 : plus (s(0), s(0)) = s(s(0))
+Proof {
+  rewrite right <- PlusZero.
+  rewrite left -> PlusSucc.
+  rewrite left -> WeirdPlusZero.
+  congruence.
+  - { reflexivity. }
+  - { reflexivity. }
+}

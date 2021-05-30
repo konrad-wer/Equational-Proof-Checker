@@ -1,0 +1,67 @@
+Theory Lattice (join/2, meet/2, top/0, bottom/0)
+{
+  JoinComm : join(x, y) = join(y, x),
+  MeetComm : meet(x, y) = meet(y, x),
+  JoinAssoc : join(x, join(y, z)) = join(join(x, y), z),
+  MeetAssoc : meet(x, meet(y, z)) = meet(meet(x, y), z),
+  JoinMeetReduce : join(x, meet(x, y)) = x,
+  MeetJoinReduce : meet(x, join(x, y)) = x,
+  JoinTop : join(x, top) = x,
+  JoinBottom : join(x, bottom) = bottom,
+  MeetTop : meet(x, top) = top,
+  MeetBottom : meet(x, bottom) = x
+}
+
+Theorem Simple : join(meet(y, x), x) = join(top, x)
+Proof {
+  rewrite <- MeetComm.
+  rewrite <- JoinComm.
+  rewrite -> JoinMeetReduce.
+  rewrite -> JoinTop.
+  reflexivity.
+}
+
+Theorem JoinRefl : join(x, x) = x
+Proof {
+  rewrite right <- JoinMeetReduce with y := bottom.
+  rewrite -> MeetBottom.
+  reflexivity.
+}
+
+Theorem MeetRefl : meet(x, x) = x
+Proof {
+  rewrite right <- MeetJoinReduce with y := top.
+  rewrite -> JoinTop.
+  reflexivity.
+}
+
+Theorem JoinBottomTop1 : join(bottom, top) = bottom
+Proof {
+  rewrite -> JoinTop.
+  reflexivity.
+}
+
+Theorem JoinBottomTop2 : join(bottom, top) = bottom
+Proof {
+  rewrite <- JoinComm.
+  rewrite -> JoinBottom.
+  reflexivity.
+}
+
+Theorem JoinBottomTopWrong1 : join(bottom, top) = bottom
+Proof {
+  symmetry.
+  reflexivity.
+}
+
+Theorem JoinBottomTopWrong2 : join(bottom, top) = bottom
+Proof {
+  rewrite -> JointTop.
+  reflexivity.
+}
+
+Theorem JoinBottomTopWrong3 : join(bottom, top) = bottom
+Proof {
+  rewrite -> MeetBottom.
+  reflexivity.
+}
