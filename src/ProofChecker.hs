@@ -39,14 +39,14 @@ data ProofError p where
   WrongNumberOfSubproofsError :: p -> Int -> Int -> ProofError p
 
 instance SourcePos ~ p => Show (ProofError p) where
-  show (ReflexivityError p t1 t2) = sourcePosPretty p ++ "\nReflexivity failure: terms are not equal " ++
-    show t1 ++ ", " ++ show t2
+  show (ReflexivityError p t1 t2) = sourcePosPretty p ++ "\nReflexivity failure: terms are not equal: " ++
+    show t1 ++ " =/= " ++ show t2
   show (UndefinedVariableError p x) = sourcePosPretty p ++ "\nVariable not in scope: " ++ x
   show (UnfinishedProof t1 t2) = "Unfinished proof: " ++ show t1 ++ " = " ++ show t2
   show (UnusedTactics p) = sourcePosPretty p ++ "\nUnused tactics left"
   show (CongruenceError p t1 t2) = sourcePosPretty p ++ "\nCould not apply congruence to terms: " ++
     show t1 ++ ", " ++ show t2
-  show (ApplicationError p eq1 eq2 t1 t2) = sourcePosPretty p ++ "\nCould not apply equation: " ++ 
+  show (ApplicationError p eq1 eq2 t1 t2) = sourcePosPretty p ++ "\nCould not apply equation: " ++
     show eq1 ++ " = " ++ show eq2 ++ ", to the goal: " ++ show t1 ++ " = " ++ show t2
   show (EquationDoesNotExistError p eqName) = sourcePosPretty p ++ "\nEquation " ++ eqName ++ " does not exist."
   show (WrongNumberOfSubproofsError p expected actual) = sourcePosPretty p ++
