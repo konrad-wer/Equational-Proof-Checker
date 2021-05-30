@@ -1,3 +1,6 @@
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE KindSignatures #-}
+
 module Parser
     ( Parser.parse
     ) where
@@ -6,6 +9,7 @@ module Parser
 -- …It's the ship that made the Kessel Run in less than 0.000012 megaParsecs."
 
 import Data.Void
+import Data.Functor
 import Control.Monad
 import Text.Megaparsec
 import Text.Megaparsec.Char
@@ -60,7 +64,7 @@ rword :: String -> Parser ()
 rword w = (lexeme . try) (string w *> notFollowedBy alphaNumChar)
 
 rws :: [String]
-rws = ["Theory", "Proof", "reflexivity", "symmetry", "transitivity", "congruence", "rewrite"]
+rws = ["Theory", "Proof", "reflexivity", "symmetry", "transitivity", "congruence", "apply", "rewrite", "left", "right", "with"]
 
 identifier :: Parser Var
 identifier = (lexeme . try) (p >>= check)
@@ -114,7 +118,7 @@ equation functionSymbols = do
   r <- term functionSymbols
   return $ Equation (Set.union (freeVarsOfTerm l) (freeVarsOfTerm r)) l r
 
-term :: Map.Map Var Int -> Parser Term
+term :: Map.Map Var Int -> Parser (Term Closed)
 term functionSymbols = do
   pos <- getSourcePos
   id <- identifier
@@ -149,7 +153,10 @@ tactic functionSymbols = getSourcePos >>= (\pos ->
   (rword "reflexivity" >> symbol "." >> return (Reflexivity pos)) <|>
   (rword "symmetry" >> symbol "." >> return (Symmetry pos)) <|>
   transitivity functionSymbols <|>
-  congruence functionSymbols)
+  congruence functionSymbols <|>
+  (apply <* symbol ".") <|>
+  (try (rewriteLR functionSymbols) <* symbol ".")  <|>
+  (rewriteRL functionSymbols <* symbol "."))
 
 transitivity :: Map.Map Var Int -> Parser (Tactic SourcePos)
 transitivity functionSymbols = do
@@ -170,3 +177,40 @@ congruence functionSymbols = do
   Congruence pos <$> many (do
     symbol "-"
     proof functionSymbols)
+
+apply :: Parser (Tactic SourcePos)
+apply = do
+  pos <- getSourcePos
+  rword "apply"
+  Apply pos <$> identifier
+
+side :: Parser Side
+side =
+  (rword "left" >> return LeftSide) <|> (rword "right" >> return RightSide )
+
+binding :: Map.Map Var Int -> Parser (Var, Term Closed)
+binding functionSymbols = do
+  x <- identifier
+  symbol ":="
+  t <- term functionSymbols
+  return (x, t)
+
+rewriteLR :: Map.Map Var Int -> Parser (Tactic SourcePos)
+rewriteLR functionSymbols = do
+  pos <- getSourcePos
+  rword "rewrite"
+  side <- option BothSides side
+  symbol "->"
+  eqName <- identifier
+  RewriteLR pos side eqName <$>
+    option Map.empty (rword "with" >> sepBy1 (binding functionSymbols) comma <&> Map.fromList)
+
+rewriteRL :: Map.Map Var Int -> Parser (Tactic SourcePos)
+rewriteRL functionSymbols = do
+  pos <- getSourcePos
+  rword "rewrite"
+  side <- option BothSides side
+  symbol "<-"
+  eqName <- identifier
+  RewriteRL pos side eqName <$>
+    option Map.empty (rword "with" >> sepBy1 (binding functionSymbols) comma <&> Map.fromList)
