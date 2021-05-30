@@ -53,8 +53,8 @@ data Tactic p
   | Apply p Var
 
 instance Show Side where
-  show LeftSide = "left "
-  show RightSide = "right "
+  show LeftSide = " left"
+  show RightSide = " right"
   show BothSides = ""
 
 instance Show (Tactic p) where
