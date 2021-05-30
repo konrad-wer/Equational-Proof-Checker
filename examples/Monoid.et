@@ -1,0 +1,25 @@
+Theory Monoid (op/2, 1/0)
+{
+  NeutralRight : op(n, 1) = n,
+  NeutralLeft : op(1, n) = n,
+  Assoc : op(n, op(m, k)) = op(op(n, m), k)
+}
+
+Theorem OneInTheMiddle : op(x, op(1, y)) = op(x, y)
+Proof {
+  rewrite -> NeutralLeft.
+  reflexivity.
+}
+
+Theorem OneInTheMiddle2 : op(x, op(1, y)) = op(x, y)
+Proof {
+  rewrite right <- NeutralLeft with n := y.
+  reflexivity.
+}
+
+Theorem ManyOnes : op(1,op(1,op(1,1))) = 1
+Proof {
+  rewrite -> Assoc.
+  rewrite -> NeutralRight.
+  apply NeutralRight.
+}
