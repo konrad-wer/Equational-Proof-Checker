@@ -28,6 +28,20 @@ Proof {
   reflexivity.
 }
 
+Theorem JoinRefl2 : join(x, x) = x
+Proof {
+  // Using transitivity to precisely rewrite only on 'x'
+  transitivity join(x, meet(x, bottom)).
+  - {
+      rewrite right -> MeetBottom.
+      reflexivity.
+    }
+  - {
+      rewrite -> JoinMeetReduce.
+      reflexivity.
+    }
+}
+
 Theorem MeetRefl : meet(x, x) = x
 Proof {
   rewrite right <- MeetJoinReduce with y := top.
