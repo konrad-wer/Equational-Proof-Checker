@@ -4,12 +4,14 @@
 `Haskell` + `stack`
 
 ## Installation
+
+Clone this repo and then run the following command inside it:
 ```
 stack install
 ```
 ## Running
 ```
-EquationalProofChecker filename [options]
+EquationalProofChecker-exe filename [options]
 ```
 
 #### Options:
