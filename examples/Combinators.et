@@ -1,0 +1,11 @@
+Theory Combinators (S/0, K/0, ap/2)
+{
+  K : ap(ap(K, x), y) = x,
+  S : ap(ap(ap(S, x), y), z) = ap(ap(x, z), ap(y, z))
+}
+
+Theorem I : ap(ap(ap(S,K), K), x) = x
+Proof {
+  rewrite -> S.
+  apply K.
+}
