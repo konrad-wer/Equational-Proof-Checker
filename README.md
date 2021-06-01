@@ -21,16 +21,15 @@ EquationalProofChecker-exe filename [options]
 ## Example
 
 ```
-Theory Monoid (op/2, 1/0)
+Theory Combinators (S/0, K/0, ap/2)
 {
-  NeutralRight : op(n, 1) = n,
-  NeutralLeft : op(1, n) = n,
-  Assoc : op(n, op(m, k)) = op(op(n, m), k)
+  K : ap(ap(K, x), y) = x,
+  S : ap(ap(ap(S, x), y), z) = ap(ap(x, z), ap(y, z))
 }
 
-Theorem OneInTheMiddle : op(x, op(1, y)) = op(x, y)
+Theorem I : ap(ap(ap(S,K), K), x) = x
 Proof {
-  rewrite -> NeutralLeft.
-  reflexivity.
+  rewrite -> S.
+  apply K.
 }
 ```
