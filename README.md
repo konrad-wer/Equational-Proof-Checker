@@ -18,8 +18,17 @@ EquationalProofChecker-exe filename [options]
 - -debug - Run selected proof step-by-step
 - -help - Print short manual
 
-## Example
+## Supported tactics
 
+- `reflexivity`.
+- `symmetry`.
+- `transitivity t`.
+- `congruence`.
+- `rewrite [left | right] eq [with x := t, ...]`.
+- `apply eq`.
+
+## Example
+See `examples` directory for more examples.
 ```
 Theory Combinators (S/0, K/0, ap/2)
 {
